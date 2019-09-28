@@ -25,6 +25,16 @@ func NewArticleModel(a *entity.Article) ArticleModel {
 	}
 }
 
+func ArticleFromModel(a *ArticleModel) entity.Article {
+	return entity.Article{
+		Url:    a.Url,
+		Title:  a.Title,
+		Img:    a.Img,
+		Tags:   a.Tags,
+		Shares: a.Shares,
+	}
+}
+
 func ArticleModelIndex() mgo.Index {
 	return mgo.Index{
 		Key:        []string{"ID", "Url"},

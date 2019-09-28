@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/jcasado94/nats-points/mongo/entity"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -52,6 +53,25 @@ type Articles struct {
 	Sports      []bson.ObjectId `bson:"sports"`
 	Business    []bson.ObjectId `bson:"business"`
 	Culture     []bson.ObjectId `bson:"culture"`
+}
+
+func NewArticlesFromModel(modelArticles Articles) entity.Articles {
+	return entity.Articles{
+		Environment: objectIdToString(modelArticles.Environment),
+		Politics:    objectIdToString(modelArticles.Politics),
+		Society:     objectIdToString(modelArticles.Society),
+		Sports:      objectIdToString(modelArticles.Sports),
+		Business:    objectIdToString(modelArticles.Business),
+		Culture:     objectIdToString(modelArticles.Culture),
+	}
+}
+
+func objectIdToString(ids []bson.ObjectId) []string {
+	res := make([]string, 0)
+	for _, id := range ids {
+		res = append(res, id.String())
+	}
+	return res
 }
 
 func CountryModelIndex() mgo.Index {

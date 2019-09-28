@@ -2,12 +2,20 @@ package main
 
 import (
 	"log"
+	"net/http"
 
-	"github.com/jcasado94/nats-points/invalidator"
+	"github.com/gorilla/mux"
+	"github.com/jcasado94/nats-points/handling"
 )
 
 func main() {
-	inv, _ := invalidator.NewInvalidator()
-	err := inv.InvalidateAllArticles("Spain")
-	log.Print(err)
+	h, err := handling.NewHandling()
+	if err != nil {
+		log.Panic("couldn't create handling")
+	}
+	r := mux.NewRouter()
+	r.HandleFunc("/articles", h.HandleArticles).Methods("GET")
+
+	log.Print("Listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

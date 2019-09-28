@@ -61,6 +61,14 @@ func (cs *CountryService) AddAllArticles(countryName string, modelArticles []mod
 	return cs.collection.Update(map[string]string{"name": countryName}, country)
 }
 
+func (cs *CountryService) GetAllArticles(countryName string) (model.Articles, error) {
+	country, err := cs.GetCountry(countryName)
+	if err != nil {
+		return model.Articles{}, err
+	}
+	return country.Articles, nil
+}
+
 func objectIdSliceToString(sl []bson.ObjectId) []string {
 	res := make([]string, 0)
 	for _, obj := range sl {

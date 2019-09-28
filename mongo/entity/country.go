@@ -1,5 +1,7 @@
 package entity
 
+import "container/heap"
+
 type Country struct {
 	Name         string
 	Info         Information       `json:"information"`
@@ -38,6 +40,61 @@ func newArticles(environmentNews, politicsNews, societyNews, sportsNews, busines
 		Business:    businessNews,
 		Culture:     cultureNews,
 	}
+}
+
+type ResultArticles struct {
+	Environment, Politics, Society, Sports, Business, Culture SortableArticles
+}
+
+func NewResultArticles() ResultArticles {
+	res := ResultArticles{
+		Environment: make(SortableArticles, 0),
+		Politics:    make(SortableArticles, 0),
+		Society:     make(SortableArticles, 0),
+		Sports:      make(SortableArticles, 0),
+		Business:    make(SortableArticles, 0),
+		Culture:     make(SortableArticles, 0),
+	}
+	heap.Init(&res.Environment)
+	heap.Init(&res.Politics)
+	heap.Init(&res.Society)
+	heap.Init(&res.Sports)
+	heap.Init(&res.Business)
+	heap.Init(&res.Culture)
+
+	return res
+}
+
+type SortableArticles []Article
+
+func (h SortableArticles) GetElements() []Article {
+	res := make([]Article, 0)
+	for len(h) != 0 {
+		res = append(res, heap.Pop(&h).(Article))
+	}
+	return res
+}
+
+func (h *SortableArticles) Add(art *Article) {
+	heap.Push(h, *art)
+}
+
+func (h SortableArticles) Len() int           { return len(h) }
+func (h SortableArticles) Less(i, j int) bool { return h[i].Shares > h[j].Shares }
+func (h SortableArticles) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+}
+
+func (h *SortableArticles) Push(x interface{}) {
+	*h = append(*h, x.(Article))
+}
+
+func (h *SortableArticles) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }
 
 type Information struct {

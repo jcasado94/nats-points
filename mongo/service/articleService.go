@@ -5,6 +5,7 @@ import (
 	"github.com/jcasado94/nats-points/mongo/entity"
 	"github.com/jcasado94/nats-points/mongo/model"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type ArticleService struct {
@@ -41,4 +42,16 @@ func (as *ArticleService) GetAllArticles() ([]model.ArticleModel, error) {
 		return nil, err
 	}
 	return articles, nil
+}
+
+func (as *ArticleService) GetAllArticlesMapped() (map[bson.ObjectId]model.ArticleModel, error) {
+	modelArticles, err := as.GetAllArticles()
+	if err != nil {
+		return nil, err
+	}
+	res := make(map[bson.ObjectId]model.ArticleModel)
+	for _, art := range modelArticles {
+		res[art.ID] = art
+	}
+	return res, nil
 }
