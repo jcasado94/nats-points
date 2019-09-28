@@ -67,3 +67,16 @@ func (h *Handling) HandleArticles(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(articles)
 }
+
+func (h *Handling) HandleInformation(w http.ResponseWriter, r *http.Request) {
+	countryName := r.URL.Query().Get("country")
+	if countryName == "" {
+		http.Error(w, "no country name", http.StatusBadRequest)
+		return
+	}
+	info, err := h.driver.GetCountryInformation(countryName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	json.NewEncoder(w).Encode(info)
+}

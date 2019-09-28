@@ -43,7 +43,11 @@ func (cm *CountryModel) PopulateArticles(arts []ArticleModel) {
 }
 
 type Information struct {
-	Population int `bson:"population"`
+	Population int                `bson:"population"`
+	Area       int                `bson:"area"`
+	Capital    string             `bson:"capital"`
+	Currency   string             `bson:"currency"`
+	Conversion map[string]float64 `bson:"conversion"`
 }
 
 type Articles struct {

@@ -6,7 +6,7 @@ import (
 	"github.com/jcasado94/nats-points/mongo/entity"
 )
 
-var maxNewsAge, _ = time.ParseDuration("730h")
+var maxNewsAge, _ = time.ParseDuration("2190h")
 
 type Scraper interface {
 	GetAllArticles(countryName string) ([]entity.Article, error)

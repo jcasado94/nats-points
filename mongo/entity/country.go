@@ -9,14 +9,6 @@ type Country struct {
 	ArticlesUrls map[string]string `json:"articlesUrls"`
 }
 
-func NewCountry(population int, environmentNews, politicsNews, societyNews, sportsNews, businessNews, cultureNews []string, articlesUrls map[string]string) Country {
-	return Country{
-		Info:         newInformation(population),
-		Articles:     newArticles(environmentNews, politicsNews, societyNews, sportsNews, businessNews, cultureNews),
-		ArticlesUrls: articlesUrls,
-	}
-}
-
 type CountryService interface {
 	GetCountry(countryName string) Country
 	GetArticlesUrl(countryName, newspaper string) string
@@ -123,11 +115,9 @@ func (h *SortableArticles) Pop() interface{} {
 }
 
 type Information struct {
-	Population int `json:"population"`
-}
-
-func newInformation(population int) Information {
-	return Information{
-		Population: population,
-	}
+	Population int                `json:"population"`
+	Area       int                `json:"area"`
+	Capital    string             `json:"capital"`
+	Currency   string             `json:"currency"`
+	Conversion map[string]float64 `json:"conversion"`
 }

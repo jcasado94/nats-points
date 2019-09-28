@@ -79,3 +79,11 @@ func (md *MongoDriver) GetAllCountryResultArticlesTagged(countryName string) (en
 
 	return res, nil
 }
+
+func (md *MongoDriver) GetCountryInformation(countryName string) (model.Information, error) {
+	country, err := md.countryService.GetCountry(countryName)
+	if err != nil {
+		return model.Information{}, err
+	}
+	return country.Info, nil
+}
