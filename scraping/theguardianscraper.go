@@ -57,7 +57,6 @@ func (s *TheGuardianScraper) GetAllNews(countryName string) ([]entity.Article, e
 		if err != nil {
 			return nil, err
 		}
-		// concurrent
 		doc.Find(".fc-container--tag").Each(func(i int, sel *goquery.Selection) {
 			dateString, exists := sel.Find(".fc-container__header time").Attr("datetime")
 			if !exists {
