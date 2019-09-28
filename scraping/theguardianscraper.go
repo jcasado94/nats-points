@@ -25,18 +25,18 @@ type TheGuardianScraper struct {
 	md     *drivers.MongoDriver
 }
 
-func NewTheGuardianScraper() (TheGuardianScraper, error) {
+func NewTheGuardianScraper() (*TheGuardianScraper, error) {
 	md, err := drivers.NewMongoDriver()
 	if err != nil {
-		return TheGuardianScraper{}, err
+		return &TheGuardianScraper{}, err
 	}
-	return TheGuardianScraper{
+	return &TheGuardianScraper{
 		client: http.Client{},
 		md:     &md,
 	}, nil
 }
 
-func (s *TheGuardianScraper) GetAllNews(countryName string) ([]entity.Article, error) {
+func (s *TheGuardianScraper) GetAllArticles(countryName string) ([]entity.Article, error) {
 	articles := make([]entity.Article, 0)
 
 	urlPattern, err := s.md.GetArticlesUrl(countryName, name)
@@ -89,9 +89,42 @@ func (s *TheGuardianScraper) GetAllNews(countryName string) ([]entity.Article, e
 						return
 					}
 
+					if titleSelection, exists := findAttrElem(articleDoc, "meta", "property", "og:title"); exists {
+						if title, exists := titleSelection.Attr("content"); exists {
+							article.Title = title
+						} else {
+							log.Printf("couldn't find title for %s", articleLink)
+						}
+					} else {
+						log.Printf("couldn't find title for %s", articleLink)
+					}
+
+					imgSelection := articleDoc.Find("img.maxed.responsive-img")
+					if imgSelection != nil {
+						if imgSrc, exists := imgSelection.Attr("src"); exists {
+							article.Img = imgSrc
+						} else {
+							log.Printf("couldn't find img for %s", articleLink)
+						}
+					} else {
+						log.Printf("couldn't find img for %s", articleLink)
+					}
+
+					if article.Img == "" {
+						if imgSelection, exists := findAttrElem(articleDoc, "meta", "property", "og:image"); exists {
+							if imgSrc, exists := imgSelection.Attr("content"); exists {
+								article.Img = imgSrc
+							} else {
+								log.Printf("couldn't find og:img for %s", articleLink)
+							}
+						} else {
+							log.Printf("couldn't find og:img for %s", articleLink)
+						}
+					}
+
 					if keywordsSelection, exists := findAttrElem(articleDoc, "meta", "name", "keywords"); exists {
 						if keywords, exist := keywordsSelection.Attr("content"); exist {
-							keywordsSlice := strings.Split(keywords, ",")
+							keywordsSlice := strings.Split(cleanTag(keywords), ",")
 							article.Tags = keywordsSlice
 						} else {
 							log.Printf("couldn't find keywords for %s", articleLink)

@@ -7,10 +7,10 @@ type Country struct {
 	ArticlesUrls map[string]string `json:"articlesUrls"`
 }
 
-func NewCountry(population int, environmentNews []string, politicsNews []string, articlesUrls map[string]string) Country {
+func NewCountry(population int, environmentNews, politicsNews, societyNews, sportsNews, businessNews, cultureNews []string, articlesUrls map[string]string) Country {
 	return Country{
 		Info:         newInformation(population),
-		Articles:     newNews(environmentNews, politicsNews),
+		Articles:     newArticles(environmentNews, politicsNews, societyNews, sportsNews, businessNews, cultureNews),
 		ArticlesUrls: articlesUrls,
 	}
 }
@@ -23,12 +23,20 @@ type CountryService interface {
 type Articles struct {
 	Environment []string `json:"environment"`
 	Politics    []string `json:"politics"`
+	Society     []string `json:"society"`
+	Sports      []string `json:"sports"`
+	Business    []string `json:"business"`
+	Culture     []string `json:"culture"`
 }
 
-func newNews(environmentNews, politicsNews []string) Articles {
+func newArticles(environmentNews, politicsNews, societyNews, sportsNews, businessNews, cultureNews []string) Articles {
 	return Articles{
 		Environment: environmentNews,
 		Politics:    politicsNews,
+		Society:     societyNews,
+		Sports:      sportsNews,
+		Business:    businessNews,
+		Culture:     cultureNews,
 	}
 }
 

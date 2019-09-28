@@ -9,6 +9,8 @@ import (
 type ArticleModel struct {
 	ID     bson.ObjectId `bson:"_id,omitempty"`
 	Url    string        `bson:"url"`
+	Title  string        `bson:"title"`
+	Img    string        `bson:"img"`
 	Tags   []string      `bson:"tags"`
 	Shares int           `bson:"shares"`
 }
@@ -16,6 +18,8 @@ type ArticleModel struct {
 func NewArticleModel(a *entity.Article) ArticleModel {
 	return ArticleModel{
 		Url:    a.Url,
+		Title:  a.Title,
+		Img:    a.Img,
 		Tags:   a.Tags,
 		Shares: a.Shares,
 	}

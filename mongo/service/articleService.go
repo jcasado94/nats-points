@@ -20,3 +20,25 @@ func NewArticleService(session *mongo.Session, dbName, colName string) *ArticleS
 func (as *ArticleService) InsertArticle(a *entity.Article) error {
 	return as.collection.Insert(a)
 }
+
+func (as *ArticleService) DeleteAllArticles() error {
+	_, err := as.collection.RemoveAll(nil)
+	return err
+}
+
+func (as *ArticleService) InsertAllArticles(articles []model.ArticleModel) error {
+	var err error
+	for _, art := range articles {
+		err = as.collection.Insert(art)
+	}
+	return err
+}
+
+func (as *ArticleService) GetAllArticles() ([]model.ArticleModel, error) {
+	var articles []model.ArticleModel
+	err := as.collection.Find(nil).All(&articles)
+	if err != nil {
+		return nil, err
+	}
+	return articles, nil
+}

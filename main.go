@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
-	"github.com/jcasado94/nats-points/scraping"
+	"github.com/jcasado94/nats-points/invalidator"
 )
 
 func main() {
-	scr, _ := scraping.NewTheGuardianScraper()
-	fmt.Println(scr.GetAllNews("Spain"))
+	inv, _ := invalidator.NewInvalidator()
+	err := inv.InvalidateAllArticles("Spain")
+	log.Print(err)
 }
