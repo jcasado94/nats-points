@@ -21,14 +21,22 @@ func (md *MongoDriver) GetAllCountryArticles(countryName string) (model.Articles
 	return md.countryService.GetAllArticles(countryName)
 }
 
-func (md *MongoDriver) GetAllCountryResultArticles(countryName string) (entity.ResultArticles, error) {
+func (md *MongoDriver) GetAllCountryResultArticles(countryName string) ([]entity.Article, error) {
+	taggedArticles, err := md.GetAllCountryResultArticlesTagged(countryName)
+	if err != nil {
+		return entity.SortableArticles{}, err
+	}
+	return taggedArticles.MergeTags().GetElements(), nil
+}
+
+func (md *MongoDriver) GetAllCountryResultArticlesTagged(countryName string) (entity.ResultArticlesTagged, error) {
 	articles, err := md.GetAllCountryArticles(countryName)
 	if err != nil {
-		return entity.ResultArticles{}, err
+		return entity.ResultArticlesTagged{}, err
 	}
 	mappedArticles, err := md.articlesService.GetAllArticlesMapped()
 	if err != nil {
-		return entity.ResultArticles{}, err
+		return entity.ResultArticlesTagged{}, err
 	}
 	res := entity.NewResultArticles()
 	for _, artId := range articles.Environment {
@@ -69,5 +77,4 @@ func (md *MongoDriver) GetAllCountryResultArticles(countryName string) (entity.R
 	res.Culture = res.Culture.GetElements()
 
 	return res, nil
-
 }

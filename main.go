@@ -14,6 +14,7 @@ func main() {
 		log.Panic("couldn't create handling")
 	}
 	r := mux.NewRouter()
+	r.HandleFunc("/articlesTagged", h.HandleTagArticles).Methods("GET")
 	r.HandleFunc("/articles", h.HandleArticles).Methods("GET")
 
 	log.Print("Listening on port 8080")

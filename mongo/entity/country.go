@@ -42,12 +42,12 @@ func newArticles(environmentNews, politicsNews, societyNews, sportsNews, busines
 	}
 }
 
-type ResultArticles struct {
+type ResultArticlesTagged struct {
 	Environment, Politics, Society, Sports, Business, Culture SortableArticles
 }
 
-func NewResultArticles() ResultArticles {
-	res := ResultArticles{
+func NewResultArticles() ResultArticlesTagged {
+	res := ResultArticlesTagged{
 		Environment: make(SortableArticles, 0),
 		Politics:    make(SortableArticles, 0),
 		Society:     make(SortableArticles, 0),
@@ -61,6 +61,31 @@ func NewResultArticles() ResultArticles {
 	heap.Init(&res.Sports)
 	heap.Init(&res.Business)
 	heap.Init(&res.Culture)
+
+	return res
+}
+
+func (ra *ResultArticlesTagged) MergeTags() SortableArticles {
+	res := make(SortableArticles, 0)
+	heap.Init(&res)
+	for _, art := range ra.Environment {
+		heap.Push(&res, art)
+	}
+	for _, art := range ra.Politics {
+		heap.Push(&res, art)
+	}
+	for _, art := range ra.Society {
+		heap.Push(&res, art)
+	}
+	for _, art := range ra.Sports {
+		heap.Push(&res, art)
+	}
+	for _, art := range ra.Business {
+		heap.Push(&res, art)
+	}
+	for _, art := range ra.Culture {
+		heap.Push(&res, art)
+	}
 
 	return res
 }

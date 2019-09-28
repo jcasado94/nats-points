@@ -22,6 +22,19 @@ func NewHandling() (Handling, error) {
 	}, nil
 }
 
+func (h *Handling) HandleTagArticles(w http.ResponseWriter, r *http.Request) {
+	countryName := r.URL.Query().Get("country")
+	if countryName == "" {
+		http.Error(w, "no country name", http.StatusBadRequest)
+		return
+	}
+	articles, err := h.driver.GetAllCountryResultArticlesTagged(countryName)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("couldn't retreive all tagged articles for %s", countryName), http.StatusInternalServerError)
+	}
+	json.NewEncoder(w).Encode(articles)
+}
+
 func (h *Handling) HandleArticles(w http.ResponseWriter, r *http.Request) {
 	countryName := r.URL.Query().Get("country")
 	if countryName == "" {
