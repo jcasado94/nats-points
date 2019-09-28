@@ -82,6 +82,14 @@ func (ra *ResultArticlesTagged) MergeTags() SortableArticles {
 	return res
 }
 
+type Information struct {
+	Population int                `json:"population"`
+	Area       int                `json:"area"`
+	Capital    string             `json:"capital"`
+	Currency   string             `json:"currency"`
+	Conversion map[string]float64 `json:"conversion"`
+}
+
 type SortableArticles []Article
 
 func (h SortableArticles) GetElements() []Article {
@@ -112,12 +120,4 @@ func (h *SortableArticles) Pop() interface{} {
 	x := old[n-1]
 	*h = old[0 : n-1]
 	return x
-}
-
-type Information struct {
-	Population int                `json:"population"`
-	Area       int                `json:"area"`
-	Capital    string             `json:"capital"`
-	Currency   string             `json:"currency"`
-	Conversion map[string]float64 `json:"conversion"`
 }
