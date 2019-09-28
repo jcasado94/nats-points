@@ -1,8 +1,9 @@
 package scraping
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -14,7 +15,10 @@ import (
 	"github.com/jcasado94/nats-points/mongo/entity"
 )
 
-const name = "theguardian"
+const (
+	name      = "theguardian"
+	sharesUrl = "https://api.nextgen.guardianapps.co.uk/sharecount/%s.json"
+)
 
 type TheGuardianScraper struct {
 	client http.Client
@@ -32,8 +36,8 @@ func NewTheGuardianScraper() (TheGuardianScraper, error) {
 	}, nil
 }
 
-func (s *TheGuardianScraper) GetAllNews(countryName string) ([]entity.News, error) {
-	news := make([]entity.Articles, 0)
+func (s *TheGuardianScraper) GetAllNews(countryName string) ([]entity.Article, error) {
+	articles := make([]entity.Article, 0)
 
 	urlPattern, err := s.md.GetArticlesUrl(countryName, name)
 	if err != nil {
@@ -57,21 +61,23 @@ func (s *TheGuardianScraper) GetAllNews(countryName string) ([]entity.News, erro
 		doc.Find(".fc-container--tag").Each(func(i int, sel *goquery.Selection) {
 			dateString, exists := sel.Find(".fc-container__header time").Attr("datetime")
 			if !exists {
-				err = errors.New("couldn't find date attribute")
+				log.Print("couldn't find date attribute")
 				return
 			}
 			dateSlice := strings.Split(dateString, "-")
 			year, err := strconv.Atoi(dateSlice[0])
 			month, err := strconv.Atoi(dateSlice[1])
 			if err != nil {
-				err = errors.New("couldn't parse date")
+				log.Printf("couldn't parse date %s", dateString)
 				return
 			}
 			date := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
 			if time.Now().Sub(date) <= maxNewsAge {
 				// concurrent
 				sel.Find(".fc-item__link").Each(func(j int, articleSel *goquery.Selection) {
-					articleLink, _ := sel.Attr("href")
+					var article entity.Article
+					articleLink, _ := articleSel.Attr("href")
+					article.Url = articleLink
 					resp, err = s.client.Get(articleLink)
 					if err != nil {
 						log.Printf("couldn't load url %s", articleLink)
@@ -83,26 +89,79 @@ func (s *TheGuardianScraper) GetAllNews(countryName string) ([]entity.News, erro
 						log.Printf("couldn't parse url %s", articleLink)
 						return
 					}
-					if keywords, exist := articleDoc.Find("meta[name='keywords']"); exist {
-						keywordsSlice, err := strings.Split(keywords, ",")
-						
+
+					if keywordsSelection, exists := findAttrElem(articleDoc, "meta", "name", "keywords"); exists {
+						if keywords, exist := keywordsSelection.Attr("content"); exist {
+							keywordsSlice := strings.Split(keywords, ",")
+							article.Tags = keywordsSlice
+						} else {
+							log.Printf("couldn't find keywords for %s", articleLink)
+						}
 					} else {
 						log.Printf("couldn't find keywords for %s", articleLink)
 					}
+
+					sharesJson, err := getSharesJson(articleLink, &s.client)
+					if err != nil {
+						log.Print(err.Error())
+					} else {
+						article.Shares = sharesJson.ShareCount
+					}
+
+					articles = append(articles, article)
 				})
 			} else {
 				finished = true
-				return
 			}
 		})
+		i++
 		if finished {
 			break
-		} else {
-			return nil, err
 		}
-		i++
 	}
 
-	return news, nil
+	return articles, nil
 
+}
+
+func findAttrElem(doc *goquery.Document, elem, attrKey, attrValue string) (node *goquery.Selection, found bool) {
+	var res *goquery.Selection
+	doc.Find(elem).Each(func(i int, s *goquery.Selection) {
+		if attr, exists := s.Attr(attrKey); exists {
+			if attr == attrValue {
+				res = s
+			}
+		}
+	})
+	if res == nil {
+		return res, false
+	}
+	return res, true
+}
+
+type SharesJson struct {
+	ShareCount int `json:"share_count"`
+}
+
+func getSharesJson(url string, client *http.Client) (SharesJson, error) {
+	resp, err := client.Get(fmt.Sprintf(sharesUrl, getPath(url)))
+	if err != nil {
+		return SharesJson{}, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return SharesJson{}, err
+	}
+	var sharesJson SharesJson
+	err = json.Unmarshal(body, &sharesJson)
+	if err != nil {
+		return SharesJson{}, err
+	}
+	return sharesJson, nil
+}
+
+func getPath(url string) string {
+	split := strings.Split(url, "theguardian.com/")
+	return split[len(split)-1]
 }
