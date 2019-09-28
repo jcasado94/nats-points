@@ -40,16 +40,27 @@ func (cs *CountryService) GetArticlesUrl(countryName, newspaper string) (string,
 	return country.ArticlesUrls[newspaper], nil
 }
 
-func (cs *CountryService) DeleteAllArticles(countryName string) error {
+func (cs *CountryService) DeleteAllArticles(countryName string) ([]bson.ObjectId, error) {
 	country, err := cs.GetCountry(countryName)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	res := make([]bson.ObjectId, 0)
+	res = append(res, country.Articles.Environment...)
+	res = append(res, country.Articles.Politics...)
+	res = append(res, country.Articles.Society...)
+	res = append(res, country.Articles.Sport...)
+	res = append(res, country.Articles.Business...)
+	res = append(res, country.Articles.Culture...)
 	country.Articles = model.Articles{
 		Environment: []bson.ObjectId{},
 		Politics:    []bson.ObjectId{},
+		Society:     []bson.ObjectId{},
+		Sport:       []bson.ObjectId{},
+		Business:    []bson.ObjectId{},
+		Culture:     []bson.ObjectId{},
 	}
-	return cs.collection.Update(map[string]string{"name": countryName}, country)
+	return res, cs.collection.Update(map[string]string{"name": countryName}, country)
 }
 
 func (cs *CountryService) AddAllArticles(countryName string, modelArticles []model.ArticleModel) error {

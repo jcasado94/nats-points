@@ -55,3 +55,22 @@ func (as *ArticleService) GetAllArticlesMapped() (map[bson.ObjectId]model.Articl
 	}
 	return res, nil
 }
+
+func (as *ArticleService) DeleteArticles(ids []bson.ObjectId) error {
+	for _, id := range ids {
+		err := as.collection.Remove(map[string]bson.ObjectId{"_id": id})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (as *ArticleService) GetArticleByUrl(url string) (model.ArticleModel, error) {
+	var res model.ArticleModel
+	err := as.collection.Find(map[string]string{"url": url}).One(&res)
+	if err != nil {
+		return model.ArticleModel{}, err
+	}
+	return res, nil
+}

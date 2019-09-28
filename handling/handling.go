@@ -3,8 +3,10 @@ package handling
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/jcasado94/nats-points/invalidator"
 	"github.com/jcasado94/nats-points/mongo/drivers"
 )
 
@@ -20,6 +22,24 @@ func NewHandling() (Handling, error) {
 	return Handling{
 		driver: &md,
 	}, nil
+}
+
+func (h *Handling) HandleInvalidation(w http.ResponseWriter, r *http.Request) {
+	countryName := r.URL.Query().Get("country")
+	if countryName == "" {
+		http.Error(w, "no country name", http.StatusBadRequest)
+		return
+	}
+	invalidator, err := invalidator.NewInvalidator(h.driver)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = invalidator.InvalidateAllCountryArticles(countryName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	log.Printf("%s articles invalidated", countryName)
 }
 
 func (h *Handling) HandleTagArticles(w http.ResponseWriter, r *http.Request) {

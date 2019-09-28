@@ -5,7 +5,7 @@ var tagMapping = map[string]string{
 	"environment":                           "environment",
 	"society":                               "society",
 	"culture":                               "culture",
-	"sports":                                "sports",
+	"sport":                                 "sport",
 	"business":                              "business",
 	"unions":                                "society",
 	"travel":                                "society",

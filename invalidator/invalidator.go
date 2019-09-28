@@ -3,6 +3,7 @@ package invalidator
 import (
 	"github.com/jcasado94/nats-points/mongo/drivers"
 	"github.com/jcasado94/nats-points/mongo/entity"
+	"github.com/jcasado94/nats-points/mongo/model"
 	"github.com/jcasado94/nats-points/scraping"
 )
 
@@ -11,12 +12,8 @@ type Invalidator struct {
 	driver   *drivers.MongoDriver
 }
 
-func NewInvalidator() (Invalidator, error) {
+func NewInvalidator(md *drivers.MongoDriver) (Invalidator, error) {
 	tg, err := scraping.NewTheGuardianScraper()
-	if err != nil {
-		return Invalidator{}, err
-	}
-	md, err := drivers.NewMongoDriver()
 	if err != nil {
 		return Invalidator{}, err
 	}
@@ -24,11 +21,11 @@ func NewInvalidator() (Invalidator, error) {
 		scrapers: []scraping.Scraper{
 			tg,
 		},
-		driver: &md,
+		driver: md,
 	}, nil
 }
 
-func (inv *Invalidator) InvalidateAllArticles(countryName string) error {
+func (inv *Invalidator) InvalidateAllCountryArticles(countryName string) error {
 	allArticles := make([]entity.Article, 0)
 	for _, s := range inv.scrapers {
 		articles, err := s.GetAllArticles(countryName)
@@ -37,21 +34,26 @@ func (inv *Invalidator) InvalidateAllArticles(countryName string) error {
 		}
 		allArticles = append(allArticles, articles...)
 	}
-	err := inv.driver.DeleteAllArticles()
+	oldIds, err := inv.driver.DeleteAllCountryArticles(countryName)
 	if err != nil {
 		return err
 	}
-	err = inv.driver.InsertAllArticles(allArticles)
+	err = inv.driver.DeleteArticles(oldIds)
 	if err != nil {
 		return err
 	}
-	err = inv.driver.DeleteAllCountryArticles(countryName)
-	if err != nil {
-		return err
+	allModelArticles := make([]model.ArticleModel, 0)
+	for _, article := range allArticles {
+		allModelArticles = append(allModelArticles, model.NewArticleModel(&article))
 	}
-	modelArticles, err := inv.driver.GetAllArticles()
-	if err != nil {
-		return err
+	inv.driver.AddArticles(allModelArticles)
+	insertedModelArticles := make([]model.ArticleModel, 0)
+	for _, art := range allModelArticles {
+		insertedArticle, err := inv.driver.GetArticleByUrl(art.Url)
+		if err != nil {
+			return err
+		}
+		insertedModelArticles = append(insertedModelArticles, insertedArticle)
 	}
-	return inv.driver.AddAllArticles(countryName, modelArticles)
+	return inv.driver.AddAllArticles(countryName, insertedModelArticles)
 }

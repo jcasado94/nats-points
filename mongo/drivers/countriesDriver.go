@@ -3,13 +3,14 @@ package drivers
 import (
 	"github.com/jcasado94/nats-points/mongo/entity"
 	"github.com/jcasado94/nats-points/mongo/model"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func (md *MongoDriver) GetArticlesUrl(countryName, newspaper string) (string, error) {
 	return md.countryService.GetArticlesUrl(countryName, newspaper)
 }
 
-func (md *MongoDriver) DeleteAllCountryArticles(countryName string) error {
+func (md *MongoDriver) DeleteAllCountryArticles(countryName string) ([]bson.ObjectId, error) {
 	return md.countryService.DeleteAllArticles(countryName)
 }
 
@@ -57,7 +58,7 @@ func (md *MongoDriver) GetAllCountryResultArticlesTagged(countryName string) (en
 		res.Society.Add(&art)
 	}
 	res.Society = res.Society.GetElements()
-	for _, artId := range articles.Sports {
+	for _, artId := range articles.Sport {
 		modelArt := mappedArticles[artId]
 		art := model.ArticleFromModel(&modelArt)
 		res.Sports.Add(&art)

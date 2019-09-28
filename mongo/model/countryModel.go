@@ -26,8 +26,8 @@ func (cm *CountryModel) PopulateArticles(arts []ArticleModel) {
 				cm.Articles.Environment = append(cm.Articles.Environment, art.ID)
 			case "culture":
 				cm.Articles.Culture = append(cm.Articles.Culture, art.ID)
-			case "sports":
-				cm.Articles.Sports = append(cm.Articles.Sports, art.ID)
+			case "sport":
+				cm.Articles.Sport = append(cm.Articles.Sport, art.ID)
 			case "business":
 				cm.Articles.Business = append(cm.Articles.Business, art.ID)
 			case "society":
@@ -50,9 +50,32 @@ type Articles struct {
 	Environment []bson.ObjectId `bson:"environment"`
 	Politics    []bson.ObjectId `bson:"politics"`
 	Society     []bson.ObjectId `bson:"society"`
-	Sports      []bson.ObjectId `bson:"sports"`
+	Sport       []bson.ObjectId `bson:"sports"`
 	Business    []bson.ObjectId `bson:"business"`
 	Culture     []bson.ObjectId `bson:"culture"`
+}
+
+func (a *Articles) MergeArticles() []bson.ObjectId {
+	res := make([]bson.ObjectId, 0)
+	for _, id := range a.Environment {
+		res = append(res, id)
+	}
+	for _, id := range a.Politics {
+		res = append(res, id)
+	}
+	for _, id := range a.Society {
+		res = append(res, id)
+	}
+	for _, id := range a.Sport {
+		res = append(res, id)
+	}
+	for _, id := range a.Business {
+		res = append(res, id)
+	}
+	for _, id := range a.Culture {
+		res = append(res, id)
+	}
+	return res
 }
 
 func NewArticlesFromModel(modelArticles Articles) entity.Articles {
@@ -60,7 +83,7 @@ func NewArticlesFromModel(modelArticles Articles) entity.Articles {
 		Environment: objectIdToString(modelArticles.Environment),
 		Politics:    objectIdToString(modelArticles.Politics),
 		Society:     objectIdToString(modelArticles.Society),
-		Sports:      objectIdToString(modelArticles.Sports),
+		Sports:      objectIdToString(modelArticles.Sport),
 		Business:    objectIdToString(modelArticles.Business),
 		Culture:     objectIdToString(modelArticles.Culture),
 	}

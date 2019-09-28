@@ -16,6 +16,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/articlesTagged", h.HandleTagArticles).Methods("GET")
 	r.HandleFunc("/articles", h.HandleArticles).Methods("GET")
+	r.HandleFunc("/invalidate", h.HandleInvalidation).Methods("GET")
 
 	log.Print("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
