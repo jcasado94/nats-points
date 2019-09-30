@@ -1,5 +1,7 @@
 package entity
 
+import "gopkg.in/mgo.v2"
+
 type Article struct {
 	Url    string   `json:"url"`
 	Title  string   `json:"title"`
@@ -22,4 +24,14 @@ type ArticleService interface {
 	InsertArticle(a *Article) error
 	DeleteAllArticles() error
 	InsertAllArticles(articles []Article) error
+}
+
+func ArticleModelIndex() mgo.Index {
+	return mgo.Index{
+		Key:        []string{"ID", "Url"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
 }
